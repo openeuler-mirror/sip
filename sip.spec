@@ -8,7 +8,7 @@
 
 Name:           sip
 Version:        4.19.12
-Release:        10
+Release:        11
 Summary:        A C/C++ library bindings generator for Python v2 and v3
 License:        GPLv2 or GPLv3 and (GPLv3+ with exceptions)
 URL:            http://www.riverbankcomputing.com/software/sip/intro
@@ -22,63 +22,6 @@ Patch0001:      sip-4.18-no_strip.patch
 Patch0002:      sip-4.18-no_rpath.patch
 
 %description
-SIP is a tool that makes it very easy to create Python bindings for C and C++
-libraries. It was originally developed to create PyQt, the Python bindings for
-the Qt toolkit, but can be used to create bindings for any C or C++ library.
-
-SIP comprises a code generator and a Python module. The code generator processes
-a set of specification files and generates C or C++ code which is then compiled
-to create the bindings extension module. The SIP Python module provides support
-functions to the automatically generated code.
-
-
-%package -n     python2-sip
-Summary:        A C/C++ library bindings generator for Python v2
-Provides:       sip-api(12) = 12.5 sip-api(12) = 12.5
-Provides:       python2-sip-api(12) = 12.5 python2-sip-api(12) = 12.5
-%{?python_provide:%python_provide python2-sip}
-
-%description -n python2-sip
-SIP is a tool that makes it very easy to create Python bindings for C and C++
-libraries. It was originally developed to create PyQt, the Python bindings for
-the Qt toolkit, but can be used to create bindings for any C or C++ library.
-
-SIP comprises a code generator and a Python module. The code generator processes
-a set of specification files and generates C or C++ code which is then compiled
-to create the bindings extension module. The SIP Python module provides support
-functions to the automatically generated code.
-
-%package -n     python2-sip-devel
-Summary:        Files needed to generate Python v2 bindings for any C++ class library
-Requires:       sip = %{version}-%{release} python2-devel
-BuildRequires:  python2-devel
-Provides:       sip-devel = %{version}-%{release} sip-devel = %{version}-%{release}
-Obsoletes:      sip-devel < %{version}-%{release}
-
-%description -n python2-sip-devel
-Files needed to generate Python v2 bindings for any C++ class library.
-
-%package -n     python2-pyqt4-sip
-Summary:        Python 2/C++ Bindings Generator for pyqt5
-Provides:       python2-pyqt4-sip-api(12) = 12.5 python2-pyqt4-sip-api(12) = 12.5
-%{?python_provide:%python_provide python2-pyqt4-sip}
-
-%description -n python2-pyqt4-sip
-SIP is a tool that makes it very easy to create Python bindings for C and C++
-libraries. It was originally developed to create PyQt, the Python bindings for
-the Qt toolkit, but can be used to create bindings for any C or C++ library.
-
-SIP comprises a code generator and a Python module. The code generator processes
-a set of specification files and generates C or C++ code which is then compiled
-to create the bindings extension module. The SIP Python module provides support
-functions to the automatically generated code.
-
-%package -n     python2-pyqt5-sip
-Summary:        Python 2/C++ Bindings Generator for pyqt5
-Provides:       python2-pyqt5-sip-api(12) = 12.5 python2-pyqt5-sip-api(12) = 12.5
-%{?python_provide:%python_provide python2-pyqt5-sip}
-
-%description -n python2-pyqt5-sip
 SIP is a tool that makes it very easy to create Python bindings for C and C++
 libraries. It was originally developed to create PyQt, the Python bindings for
 the Qt toolkit, but can be used to create bindings for any C or C++ library.
@@ -149,21 +92,6 @@ functions to the automatically generated code.
 %prep
 %autosetup -n %{name}-%{version} -p1
 %build
-install -d %{_target_platform}-python2
-cd %{_target_platform}-python2
-%{__python2} ../configure.py CFLAGS+="%{optflags}" CXXFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
-%make_build
-cd -
-install -d %{_target_platform}-python2-pyqt4
-cd %{_target_platform}-python2-pyqt4
-%{__python2} ../configure.py --sip-module=PyQt4.sip CFLAGS+="%{optflags}" CXXFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
-%make_build
-cd -
-install -d %{_target_platform}-python2-pyqt5
-cd %{_target_platform}-python2-pyqt5
-%{__python2} ../configure.py --sip-module=PyQt5.sip CFLAGS+="%{optflags}" CXXFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
-%make_build
-cd -
 install -d %{_target_platform}-python3
 cd %{_target_platform}-python3
 %{__python3} ../configure.py CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
@@ -185,9 +113,6 @@ ln -s sip %{buildroot}%{_bindir}/python3-sip
 %make_install -C %{_target_platform}-python3-pyqt4
 %make_install -C %{_target_platform}-python3-pyqt5
 install -d %{buildroot}%{python3_sitearch}/__pycache__/exclude_rpm_hack
-%make_install -C %{_target_platform}-python2
-%make_install -C %{_target_platform}-python2-pyqt4
-%make_install -C %{_target_platform}-python2-pyqt5
 install %{SOURCE2} %{buildroot}%{_bindir}/sip-pyqt4
 install %{SOURCE2} %{buildroot}%{_bindir}/sip-pyqt5
 sed -i -e 's|@SIP_MODULE@|PyQt4.sip|g' %{buildroot}%{_bindir}/sip-pyqt4
@@ -203,26 +128,6 @@ install -D -p -m644 %{SOURCE1} %{buildroot}%{rpm_macros_dir}/macros.sip
 %{_bindir}/python3-sip
 %dir %{_datadir}/sip/
 %{rpm_macros_dir}/macros.sip
-
-%files -n python2-sip-devel
-%{python2_inc}/sip.h
-%{python2_sitearch}/sipconfig.py*
-%{python2_sitearch}/sipdistutils.py*
-
-%files -n python2-sip
-%doc NEWS README LICENSE LICENSE-GPL2 LICENSE-GPL3
-%{python2_sitearch}/sip.*
-%{python2_sitearch}/sip-%{version}.dist-info/
-
-%files -n python2-pyqt4-sip
-%doc NEWS README LICENSE LICENSE-GPL2 LICENSE-GPL3
-%{python2_sitearch}/PyQt4/
-%{python2_sitearch}/PyQt4_sip-%{version}.dist-info/
-
-%files -n python2-pyqt5-sip
-%doc NEWS README LICENSE LICENSE-GPL2 LICENSE-GPL3
-%{python2_sitearch}/PyQt5/sip.*
-%{python2_sitearch}/PyQt5_sip-%{version}.dist-info/
 
 %files -n python3-sip-devel
 %{python3_inc}/sip.h
@@ -251,5 +156,8 @@ install -D -p -m644 %{SOURCE1} %{buildroot}%{rpm_macros_dir}/macros.sip
 %exclude %{python3_sitearch}/__pycache__/exclude_rpm_hack
 
 %changelog
+* Wed Oct 21 2020 wutao <wutao61@huawei.com> - 4.19.12-11
+- delete python2 modules
+
 * Thu Nov 28 2019 Ling Yang <lingyang2@huawei.com> - 4.19.12-10
 - Package init
