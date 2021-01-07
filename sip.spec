@@ -8,9 +8,10 @@
 
 Name:           sip
 Version:        4.19.12
-Release:        11
+Release:        12
 Summary:        A C/C++ library bindings generator for Python v2 and v3
-License:        GPLv2 or GPLv3 and (GPLv3+ with exceptions)
+# sipgen/parser.{c.h} is GPLv2 with exceptions (bison)
+License:        GPLv2 and (GPLv2 with exceptions) or GPLv3
 URL:            http://www.riverbankcomputing.com/software/sip/intro
 Source0:        http://downloads.sourceforge.net/pyqt/sip-%{version}.tar.gz
 Source1:        macros.sip
@@ -145,17 +146,17 @@ install -D -p -m644 %{SOURCE1} %{buildroot}%{rpm_macros_dir}/macros.sip
 %doc NEWS README LICENSE LICENSE-GPL2 LICENSE-GPL3
 %{python3_sitearch}/PyQt4/sip.*
 %{python3_sitearch}/PyQt4_sip-%{version}.dist-info/
-%{python3_sitearch}/__pycache__/*
-%exclude %{python3_sitearch}/__pycache__/exclude_rpm_hack
 
 %files -n python3-pyqt5-sip
 %doc NEWS README LICENSE LICENSE-GPL2 LICENSE-GPL3
 %{python3_sitearch}/PyQt5/sip.*
 %{python3_sitearch}/PyQt5_sip-%{version}.dist-info/
-%{python3_sitearch}/__pycache__/*
-%exclude %{python3_sitearch}/__pycache__/exclude_rpm_hack
 
 %changelog
+* Tue Jan 05 2021 maminjie <maminjie1@huawei.com> - 4.19.12-12
+- resolve installation conflicts of sub-packages
+- fix license
+
 * Wed Oct 21 2020 wutao <wutao61@huawei.com> - 4.19.12-11
 - delete python2 modules
 
