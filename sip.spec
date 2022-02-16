@@ -1,137 +1,194 @@
-%{!?python2_inc:%global python2_inc %(%{__python2} -c "from distutils.sysconfig import get_python_inc; print get_python_inc(1)")}
 %{!?python3_inc:%global python3_inc %(%{__python3} -c "from distutils.sysconfig import get_python_inc; print(get_python_inc(1))")}
-%{!?python2_sitearch:%global python2_sitearch %(%{__python2} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
-
+%global PYINCLUDE %{_includedir}/python%{python3_version}
 %global rpm_macros_dir %(d=%{_rpmconfigdir}/macros.d; [ -d $d ] || d=%{_sysconfdir}/rpm; echo $d)
-
 %undefine _strict_symbol_defs_build
+%global wx_siplib 1
+%global pyqt5_sip 1
 
-Name:           sip
-Version:        4.19.12
-Release:        12
-Summary:        A C/C++ library bindings generator for Python v2 and v3
-# sipgen/parser.{c.h} is GPLv2 with exceptions (bison)
-License:        GPLv2 and (GPLv2 with exceptions) or GPLv3
-URL:            http://www.riverbankcomputing.com/software/sip/intro
-Source0:        http://downloads.sourceforge.net/pyqt/sip-%{version}.tar.gz
-Source1:        macros.sip
-Source2:        sip-wrapper.sh
-BuildRequires:  gcc-c++ sed
-Obsoletes:      sip-macros < %{version}-%{release}
-Provides:       sip-macros = %{version}-%{release}
-Patch0001:      sip-4.18-no_strip.patch
-Patch0002:      sip-4.18-no_rpath.patch
+Summary: SIP - Python/C++ Bindings Generator
+Name: 	 sip
+Version: 4.19.25
+Release: 1
+License: GPLv2 or GPLv3
+Url: https://riverbankcomputing.com/software/sip/intro
+Source0: https://riverbankcomputing.com/static/Downloads/sip/%{version}/sip-%{version}.tar.gz
+Source1: macros.sip
+Source10: sip-wrapper.sh
 
-%description
-SIP is a tool that makes it very easy to create Python bindings for C and C++
-libraries. It was originally developed to create PyQt, the Python bindings for
-the Qt toolkit, but can be used to create bindings for any C or C++ library.
+Patch50: sip-4.18-no_strip.patch
+Patch51: sip-4.18-no_rpath.patch
+Patch53: sip-4.19.18-no_hardcode_sip_so.patch
+Patch54: sip-4.19.25-py_ssize_t_clean.patch
 
-SIP comprises a code generator and a Python module. The code generator processes
-a set of specification files and generates C or C++ code which is then compiled
-to create the bindings extension module. The SIP Python module provides support
-functions to the automatically generated code.
+BuildRequires: make
+BuildRequires: gcc-c++
+BuildRequires: sed
+BuildRequires: bison
+BuildRequires: flex
 
-%package -n     python3-sip
-Summary:        A C/C++ library bindings generator for Python v3
-Provides:       python3-sip-api(12) = 12.5 python3-sip-api(12) = 12.5
+Obsoletes: sip-macros < %{version}-%{release}
+Provides:  sip-macros = %{version}-%{release}
 
+%global _description\
+SIP is a tool for generating bindings for C++ classes so that they can be\
+accessed as normal Python classes. SIP takes many of its ideas from SWIG but,\
+because it is specifically designed for C++ and Python, is able to generate\
+tighter bindings. SIP is so called because it is a small SWIG.\
+\
+SIP was originally designed to generate Python bindings for KDE and so has\
+explicit support for the signal slot mechanism used by the Qt/KDE class\
+libraries. However, SIP can be used to generate Python bindings for any C++\
+class library.
+
+%description %_description
+
+%package doc
+Summary: Documentation for %summary
+BuildArch: noarch
+%description doc
+This package contains HTML documentation for SIP.
+%_description
+
+
+%package -n python3-sip
+Summary: SIP - Python 3/C++ Bindings Generator
+Provides: python3-sip-api(12) = 12.7
 %description -n python3-sip
 This is the Python 3 build of SIP.
 
-SIP is a tool that makes it very easy to create Python bindings for C and C++
-libraries. It was originally developed to create PyQt, the Python bindings for
-the Qt toolkit, but can be used to create bindings for any C or C++ library.
+%_description
 
-SIP comprises a code generator and a Python module. The code generator processes
-a set of specification files and generates C or C++ code which is then compiled
-to create the bindings extension module. The SIP Python module provides support
-functions to the automatically generated code.
-
-%package -n     python3-sip-devel
-Summary:        Files needed to generate Python v3 bindings for any C++ class library
-Requires:       sip = %{version}-%{release} python3-devel
-BuildRequires:  python3-devel
-
+%package -n python3-sip-devel
+Summary: Files needed to generate Python bindings for any C++ class library
+Requires: sip = %{version}-%{release}
+BuildRequires: python3-devel
+Requires:      python3-devel
 %description -n python3-sip-devel
-Files needed to generate Python v3 bindings for any C++ class library
+%{summary}.
 
-%package -n     python3-pyqt4-sip
-Summary:        Python 3/C++ Bindings Generator for pyqt4
-Provides:       python3-pyqt4-sip-api(12) = 12.5 python3-pyqt4-sip-api(12) = 12.5
-BuildRequires:  python3-devel
-
+%package -n python3-pyqt4-sip
+Summary: SIP - Python 3/C++ Bindings Generator for pyqt4
+BuildRequires: python3-devel
+Provides: python3-pyqt4-sip-api(12) = 12.7
 %description -n python3-pyqt4-sip
 This is the Python 3 build of pyqt4-SIP.
 
-SIP is a tool that makes it very easy to create Python bindings for C and C++
-libraries. It was originally developed to create PyQt, the Python bindings for
-the Qt toolkit, but can be used to create bindings for any C or C++ library.
-
-SIP comprises a code generator and a Python module. The code generator processes
-a set of specification files and generates C or C++ code which is then compiled
-to create the bindings extension module. The SIP Python module provides support
-functions to the automatically generated code.
-
-%package -n     python3-pyqt5-sip
-Summary:        Python 3/C++ Bindings Generator for pyqt5
-BuildRequires:  python3-devel
-Provides:       python3-pyqt5-sip-api(12) = 12.5 python3-pyqt5-sip-api(12) = 12.5
-
+%package -n python3-pyqt5-sip
+Summary: SIP - Python 3/C++ Bindings Generator for pyqt5
+BuildRequires: python3-devel
+Provides: python3-pyqt5-sip-api(12) = 12.7
 %description -n python3-pyqt5-sip
 This is the Python 3 build of pyqt5-SIP.
 
-SIP is a tool that makes it very easy to create Python bindings for C and C++
-libraries. It was originally developed to create PyQt, the Python bindings for
-the Qt toolkit, but can be used to create bindings for any C or C++ library.
+%package -n python3-wx-siplib
+Summary: SIP - Python 3/C++ Bindings Generator for wx
+BuildRequires: python3-devel
+Provides: python3-wx-siplib-api(12) = 12.7
+Provides: python3-wx-siplib-api(12) = 12.7
+%description -n python3-wx-siplib
+This is the Python 3 build of wx-siplib.
 
-SIP comprises a code generator and a Python module. The code generator processes
-a set of specification files and generates C or C++ code which is then compiled
-to create the bindings extension module. The SIP Python module provides support
-functions to the automatically generated code.
+%_description
+
+
 
 %prep
-%autosetup -n %{name}-%{version} -p1
+
+%setup -q -n %{name}-%{version}
+
+%patch50 -p1 -b .no_strip
+%patch51 -p1 -b .no_rpath
+%patch53 -p1 -b .no_sip_so
+%patch54 -p1 -b .py_ssize_t_clean
+
+
 %build
-install -d %{_target_platform}-python3
-cd %{_target_platform}-python3
-%{__python3} ../configure.py CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+flex --outfile=sipgen/lexer.c sipgen/metasrc/lexer.l
+bison --yacc --defines=sipgen/parser.h --output=sipgen/parser.c sipgen/metasrc/parser.y
+sed -i -e 's|target = siplib|target = sip|g' siplib/siplib.sbf
+
+mkdir %{_target_platform}-python3
+pushd %{_target_platform}-python3
+%{__python3} ../configure.py \
+  -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
+  CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+
 %make_build
-cd -
-install -d %{_target_platform}-python3-pyqt4
-cd %{_target_platform}-python3-pyqt4
-%{__python3} ../configure.py --sip-module=PyQt4.sip CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+popd
+
+mkdir %{_target_platform}-python3-pyqt4
+pushd %{_target_platform}-python3-pyqt4
+%{__python3} ../configure.py \
+  --sip-module=PyQt4.sip \
+  -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
+  CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+
 %make_build
-cd -
-install -d %{_target_platform}-python3-pyqt5
-cd %{_target_platform}-python3-pyqt5
-%{__python3} ../configure.py --sip-module=PyQt5.sip CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+popd
+
+mkdir %{_target_platform}-python3-pyqt5
+pushd %{_target_platform}-python3-pyqt5
+%{__python3} ../configure.py \
+  --sip-module=PyQt5.sip \
+  -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
+  CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+
 %make_build
-cd -
+popd
+
+sed -i -e 's|target = sip|target = siplib|g' siplib/siplib.sbf
+mkdir %{_target_platform}-python3-wx
+pushd %{_target_platform}-python3-wx
+%{__python3} ../configure.py \
+  --sip-module=wx.siplib \
+  -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
+  CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+
+%make_build
+popd
+sed -i -e 's|target = siplib|target = sip|g' siplib/siplib.sbf
+
+
 %install
 %make_install -C %{_target_platform}-python3
-ln -s sip %{buildroot}%{_bindir}/python3-sip
 %make_install -C %{_target_platform}-python3-pyqt4
 %make_install -C %{_target_platform}-python3-pyqt5
-install -d %{buildroot}%{python3_sitearch}/__pycache__/exclude_rpm_hack
-install %{SOURCE2} %{buildroot}%{_bindir}/sip-pyqt4
-install %{SOURCE2} %{buildroot}%{_bindir}/sip-pyqt5
+%make_install -C %{_target_platform}-python3-wx
+mv %{buildroot}%{python3_sitearch}/wx/sip.pyi %{buildroot}%{python3_sitearch}/wx/siplib.pyi
+ln -s sip %{buildroot}%{_bindir}/python3-sip
+mkdir -p %{buildroot}%{python3_sitearch}/__pycache__/exclude_rpm_hack
+
+install %{SOURCE10} %{buildroot}%{_bindir}/sip-pyqt4
+install %{SOURCE10} %{buildroot}%{_bindir}/sip-pyqt5
+install %{SOURCE10} %{buildroot}%{_bindir}/sip-wx
 sed -i -e 's|@SIP_MODULE@|PyQt4.sip|g' %{buildroot}%{_bindir}/sip-pyqt4
 sed -i -e 's|@SIP_MODULE@|PyQt5.sip|g' %{buildroot}%{_bindir}/sip-pyqt5
-install -d %{buildroot}%{_datadir}/sip
+sed -i -e 's|@SIP_MODULE@|wx.siplib|g' %{buildroot}%{_bindir}/sip-wx
+
+mkdir -p %{buildroot}%{_datadir}/sip
 install -D -p -m644 %{SOURCE1} %{buildroot}%{rpm_macros_dir}/macros.sip
+pushd doc
+find html/ -type f -exec install -m0644 -D {} %{buildroot}%{_pkgdocdir}/{} \;
+popd
+
 
 %files
 %doc README LICENSE LICENSE-GPL2 LICENSE-GPL3
 %{_bindir}/sip
+# sip-wrappers
 %{_bindir}/sip-pyqt4
 %{_bindir}/sip-pyqt5
+%{_bindir}/sip-wx
+# compat symlink
 %{_bindir}/python3-sip
 %dir %{_datadir}/sip/
 %{rpm_macros_dir}/macros.sip
 
+%files doc
+%{_pkgdocdir}/html
+
 %files -n python3-sip-devel
-%{python3_inc}/sip.h
+%{PYINCLUDE}/sip.h
 %{python3_sitearch}/sipconfig.py*
 %{python3_sitearch}/sipdistutils.py*
 %{python3_sitearch}/__pycache__/*
@@ -144,15 +201,26 @@ install -D -p -m644 %{SOURCE1} %{buildroot}%{rpm_macros_dir}/macros.sip
 
 %files -n python3-pyqt4-sip
 %doc NEWS README LICENSE LICENSE-GPL2 LICENSE-GPL3
+%dir %{python3_sitearch}/PyQt4/
 %{python3_sitearch}/PyQt4/sip.*
 %{python3_sitearch}/PyQt4_sip-%{version}.dist-info/
 
 %files -n python3-pyqt5-sip
 %doc NEWS README LICENSE LICENSE-GPL2 LICENSE-GPL3
+%dir %{python3_sitearch}/PyQt5/
 %{python3_sitearch}/PyQt5/sip.*
 %{python3_sitearch}/PyQt5_sip-%{version}.dist-info/
 
+%files -n python3-wx-siplib
+%doc NEWS README LICENSE LICENSE-GPL2 LICENSE-GPL3
+%dir %{python3_sitearch}/wx/
+%{python3_sitearch}/wx/siplib.*
+%{python3_sitearch}/wx_siplib-%{version}.dist-info/
+
 %changelog
+* Sat Jan 29 2022 chenchen <chen_aka_jan@163.com> - 4.19.25-1
+- update to 4.19.25
+
 * Tue Jan 05 2021 maminjie <maminjie1@huawei.com> - 4.19.12-12
 - resolve installation conflicts of sub-packages
 - fix license
