@@ -8,7 +8,7 @@
 Summary: SIP - Python/C++ Bindings Generator
 Name: 	 sip
 Version: 4.19.25
-Release: 1
+Release: 2
 License: GPLv2 or GPLv3
 Url: https://riverbankcomputing.com/software/sip/intro
 Source0: https://riverbankcomputing.com/static/Downloads/sip/%{version}/sip-%{version}.tar.gz
@@ -19,6 +19,7 @@ Patch50: sip-4.18-no_strip.patch
 Patch51: sip-4.18-no_rpath.patch
 Patch53: sip-4.19.18-no_hardcode_sip_so.patch
 Patch54: sip-4.19.25-py_ssize_t_clean.patch
+Patch55: support-specify-cc.patch
 
 BuildRequires: make
 BuildRequires: gcc-c++
@@ -100,6 +101,7 @@ This is the Python 3 build of wx-siplib.
 %patch51 -p1 -b .no_rpath
 %patch53 -p1 -b .no_sip_so
 %patch54 -p1 -b .py_ssize_t_clean
+%patch55 -p1
 
 
 %build
@@ -109,29 +111,49 @@ sed -i -e 's|target = siplib|target = sip|g' siplib/siplib.sbf
 
 mkdir %{_target_platform}-python3
 pushd %{_target_platform}-python3
+%if "%toolchain" == "clang"
+  %{__python3} ../configure.py -p linux-clang \
+  -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
+  CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+%else
 %{__python3} ../configure.py \
   -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
   CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+%endif
 
 %make_build
 popd
 
 mkdir %{_target_platform}-python3-pyqt4
 pushd %{_target_platform}-python3-pyqt4
+%if "%toolchain" == "clang"
+%{__python3} ../configure.py -p linux-clang \
+  --sip-module=PyQt4.sip \
+  -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
+  CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+%else
 %{__python3} ../configure.py \
   --sip-module=PyQt4.sip \
   -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
   CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+%endif
 
 %make_build
 popd
 
 mkdir %{_target_platform}-python3-pyqt5
 pushd %{_target_platform}-python3-pyqt5
+%if "%toolchain" == "clang"
+%{__python3} ../configure.py -p linux-clang \
+  --sip-module=PyQt5.sip \
+  -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
+  CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+%else
 %{__python3} ../configure.py \
   --sip-module=PyQt5.sip \
   -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
   CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+%endif
 
 %make_build
 popd
@@ -139,10 +161,18 @@ popd
 sed -i -e 's|target = sip|target = siplib|g' siplib/siplib.sbf
 mkdir %{_target_platform}-python3-wx
 pushd %{_target_platform}-python3-wx
+%if "%toolchain" == "clang"
+%{__python3} ../configure.py -p linux-clang \
+  --sip-module=wx.siplib \
+  -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
+  CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+%else
 %{__python3} ../configure.py \
   --sip-module=wx.siplib \
   -b %{_bindir} -d %{python3_sitearch} -e %{PYINCLUDE} \
   CXXFLAGS+="%{optflags}" CFLAGS+="%{optflags}" LFLAGS+="%{?__global_ldflags}"
+%endif
+
 
 %make_build
 popd
@@ -218,6 +248,9 @@ popd
 %{python3_sitearch}/wx_siplib-%{version}.dist-info/
 
 %changelog
+* Mon Apr 17 2023 jammyjellyfish <jammyjellyfish255@outlook.com> - 4.19.25-2
+- Support specify CC
+
 * Sat Jan 29 2022 chenchen <chen_aka_jan@163.com> - 4.19.25-1
 - update to 4.19.25
 
